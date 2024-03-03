@@ -12,7 +12,7 @@ function StudentMarks() {
   const [figma, setfigma] = useState(0);
   const navigate = useNavigate();
   const {id} = useParams();
-
+  const [error, setError] = useState('');
   const [employeeList, setEmployeeList] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
@@ -23,7 +23,22 @@ function StudentMarks() {
     setfigma("");
     setSelectedEmployee(null);
   };
+
+  const validateInputs = () => {
+    if (!reactjs || !nodejs || !reactnative || !figma) {
+      setError('All fields are required');
+      return false;
+    }
+    if (isNaN(reactjs) || isNaN(nodejs) || isNaN(reactnative) || isNaN(figma)) {
+      setError('Marks should be numeric');
+      return false;
+    }
+    // Additional validation logic if needed
+    return true;
+  };
+
   const addEmployee = async() => {
+    if (validateInputs()) {
     Axios.post("http://localhost:8000/marks", {
       id:uuidv4(),
       studentId:id,
@@ -35,6 +50,8 @@ function StudentMarks() {
       getEmployees();
       clearForm();
     });
+    setError("");
+  }
   };
 
   const getEmployees = () => {
@@ -52,6 +69,7 @@ const updateEmployeeWage = (employee) => {
   };
 
   const submitUpdatedEmployee = () => {
+    if (validateInputs()) {
     Axios.put(`http://localhost:8000/marks/${selectedEmployee.id}`, {
       studentId:id,
       reactjs: reactjs,
@@ -68,6 +86,8 @@ const updateEmployeeWage = (employee) => {
     }).catch((error) => {
       console.error("Error updating employee:", error);
     });
+    setError("");
+  }
   };
 
  
@@ -123,12 +143,13 @@ const updateEmployeeWage = (employee) => {
         />
         <label>Figma:</label>
         <input
-          type="text"
+          type="number"
           value={figma}
           onChange={(event) => {
             setfigma(event.target.value);
           }}
         />
+        {error && <p style={{ color: 'red' }}>{error}</p>}
          {selectedEmployee && (
           <button onClick={submitUpdatedEmployee}>Update Student Mark</button>
         )}
