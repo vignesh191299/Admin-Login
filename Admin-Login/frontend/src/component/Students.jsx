@@ -11,7 +11,7 @@ function Students() {
   const [phonenumber, setphonenumber] = useState("");
   const [dob, setdob] = useState("");
   const navigate = useNavigate();
-
+  const [error, setError] = useState("");
   const [employeeList, setEmployeeList] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
@@ -22,7 +22,25 @@ function Students() {
     setdob("");
     setSelectedEmployee(null);
   };
+
+  const validateInputs = () => {
+    if (!name || !email || !phonenumber || !dob) {
+      setError("All fields are required");
+      return false;
+    }
+    if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+    if (!/^\d{10}$/.test(phonenumber)) {
+      setError("Please enter a valid 10-digit phone number");
+      return false;
+    }
+    // You can add more validations as per your requirement
+    return true;
+  };
   const addEmployee = async() => {
+    if (validateInputs()) {
     Axios.post("http://localhost:8000/students", {
       id:uuidv4(),
       name: name,
@@ -33,6 +51,8 @@ function Students() {
       getEmployees();
       clearForm();
     });
+    setError("");
+  }
   };
 
   const getEmployees = () => {
@@ -50,6 +70,7 @@ const updateEmployeeWage = (employee) => {
   };
 
   const submitUpdatedEmployee = () => {
+    if (validateInputs()) {
     Axios.put(`http://localhost:8000/students/${selectedEmployee.id}`, {
       name: name,
       email: email,
@@ -65,6 +86,8 @@ const updateEmployeeWage = (employee) => {
     }).catch((error) => {
       console.error("Error updating employee:", error);
     });
+    setError("");
+  }
   };
 
  
@@ -119,12 +142,13 @@ const updateEmployeeWage = (employee) => {
         />
         <label>dob:</label>
         <input
-          type="text"
+          type="date"
           value={dob}
           onChange={(event) => {
             setdob(event.target.value);
           }}
         />
+        {error && <p style={{ color: "red" }}>{error}</p>}
          {selectedEmployee && (
           <button onClick={submitUpdatedEmployee}>Update Student</button>
         )}
